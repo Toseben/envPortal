@@ -74,7 +74,7 @@ void main() {
     
     // Final Texture
     float alpha = range(0.0, 0.1, circle);
-    gl_FragColor = vec4(vec3(texture2D(textureEnv, sampleUV, 0.0)), alpha);
+    gl_FragColor = vec4(vec3(texture2D(textureEnv, sampleUV, 0.0)), 1.0);
     //gl_FragColor = vec4(vec3(circle > 0.0), 1.0);
     
 }

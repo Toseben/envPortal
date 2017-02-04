@@ -9,15 +9,6 @@ AFRAME.registerComponent('glsl_shader', {
     
     init: function () {
         
-        // RENDER SETTINGS //
-        var scene = document.querySelector('a-scene');
-        scene.addEventListener('render-target-loaded', function () {
-            scene.renderer.sortObjects = true;
-            tRenderer = scene.renderer;
-            tCamera = scene.camera;
-            tScene = scene.object3D;
-        });
-        
         // INIT //
         clickTime = Date.now();
         var element = this.el;
@@ -27,10 +18,18 @@ AFRAME.registerComponent('glsl_shader', {
         var ringSize = 0.015;
         var radius = 1, segments = 64, rings = 32;
         var geometry = new THREE.SphereBufferGeometry( radius, segments, rings ); 
-        //var geometry = new THREE.PlaneBufferGeometry( 2, 1, 1, 1 );
         var mesh = this.el.getOrCreateObject3D('mesh', THREE.Mesh);
         mesh.geometry = geometry;
         mesh.renderOrder = 0;
+        
+        // RENDER SETTINGS //
+        var scene = document.querySelector('a-scene');
+        scene.addEventListener('render-target-loaded', function () {
+            scene.renderer.sortObjects = true;
+            tRenderer = scene.renderer;
+            tCamera = scene.camera;
+            tScene = scene.object3D;
+        });
         
         // SHADER //
         SHADER_LOADER.load(function (data) {
@@ -40,7 +39,7 @@ AFRAME.registerComponent('glsl_shader', {
             var texture = loader.load( 'img/int_' + index + '.jpg' );
             texture.wrapS = THREE.RepeatWrapping;
             texture.wrapT = THREE.ClampToEdgeWrapping;
-        
+            
             element.uniforms = {
                 elementPos: { value: position },
                 rayPos: { value: new THREE.Vector3( 0, 0, 0 )},
@@ -74,15 +73,18 @@ AFRAME.registerComponent('glsl_shader', {
                                 element.uniforms.hoverTime.value = this.animValue;      
                             }
                         });
+                        
                         // A-FRAME VR VIEW - DELETE!
                         $({animValue: 0}).animate({animValue: 1}, {
                             duration: 1000,
                             complete: function() {
-                                console.log("VR Click!")
-                                var mousedown = new Event('mousedown');
-                                var mouseup = new Event('mouseup');
-                                document.dispatchEvent(mousedown);
-                                document.dispatchEvent(mouseup);
+                                if (animSwitch == 1) {
+                                    console.log("Gaze Click!")
+                                    var mousedown = new Event('mousedown');
+                                    var mouseup = new Event('mouseup');
+                                    document.dispatchEvent(mousedown);
+                                    document.dispatchEvent(mouseup);
+                                }
                             }
                         });
                     }
@@ -102,15 +104,17 @@ AFRAME.registerComponent('glsl_shader', {
             });
             
             // MOUSE CLICK //
-            var longPress = 250; // Duration you consider a long press
-            var startTime;
+            var left  = 0,
+                top   = 0;  
 
             $(document).on('mousedown', function(e) {
-                startTime = new Date().getTime();
+                left = e.pageX;
+                top = e.pageY;
             });
 
             $(document).on('mouseup', function(e) {
-                if (new Date().getTime() < (startTime + longPress)) {
+                if (left == e.pageX && top == e.pageY) {
+                    //console.log("Mouse Click!")
                     expandCircle();
                 }
             });
@@ -180,6 +184,7 @@ AFRAME.registerComponent('glsl_shader', {
             }
             
             // Post-Anim Reset of other circles
+            var distance = new THREE.Vector2(0.5, 0.5);
             function animFinish() {
                 var allEnv = $('.env');
                 var arrayLength = allEnv.length;
@@ -188,8 +193,10 @@ AFRAME.registerComponent('glsl_shader', {
                     if (envIndex != selected) {
                         allEnv[i].getObject3D('mesh').renderOrder = 1;
                         allEnv[i].uniforms.click.value = 0;
-                        allEnv[i].uniforms.elementPos.value = newEnvPositions(i);
-                        allEnv[i].uniforms.distance.value = new THREE.Vector2(0.5, 0.5).sub(newEnvPositions(i));
+                        //console.log(newEnvPositions(i));
+                        //allEnv[i].uniforms.elementPos.value = newEnvPositions(i);
+                        //console.log(distance.sub(newEnvPositions(i)));
+                        //allEnv[i].uniforms.distance.value = distance.sub(newEnvPositions(i));
                     }
                 }
                 
@@ -216,9 +223,5 @@ AFRAME.registerComponent('glsl_shader', {
                 transparent: true
             });
         });
-    },
-    tick: function () {
-        var element = this.el;
-        element.uniforms.currentTime.value = Math.max(0.0, Math.min(1.0, (Date.now() * 0.001) % 3.0 - 1.0));
     }
 });
