@@ -4,7 +4,7 @@ var selected;
 AFRAME.registerComponent('glsl_shader', {
     schema: {
         index: {type: 'string'},
-        pos: {type: 'vec3'}
+        pos: {type: 'vec2'}
     },
     
     init: function () {
@@ -21,13 +21,13 @@ AFRAME.registerComponent('glsl_shader', {
         // INIT //
         clickTime = Date.now();
         var element = this.el;
-        element.uniforms;
         var index = parseInt(this.data.index) + 1;
         var dPos = this.data.pos;
-        var position = new THREE.Vector3(dPos.x, dPos.y, dPos.z).normalize();
-        var ringSize = 0.25;
+        var position = new THREE.Vector2(dPos.x, dPos.y);
+        var ringSize = 0.015;
         var radius = 1, segments = 64, rings = 32;
         var geometry = new THREE.SphereBufferGeometry( radius, segments, rings ); 
+        //var geometry = new THREE.PlaneBufferGeometry( 2, 1, 1, 1 );
         var mesh = this.el.getOrCreateObject3D('mesh', THREE.Mesh);
         mesh.geometry = geometry;
         mesh.renderOrder = 0;
@@ -37,16 +37,21 @@ AFRAME.registerComponent('glsl_shader', {
             var customVertexShader = data.custom.vertex;
             var customFragmentShader = data.custom.fragment
             var loader = new THREE.TextureLoader();
+            var texture = loader.load( 'img/int_' + index + '.jpg' );
+            texture.wrapS = THREE.RepeatWrapping;
+            texture.wrapT = THREE.ClampToEdgeWrapping;
         
             element.uniforms = {
                 elementPos: { value: position },
                 rayPos: { value: new THREE.Vector3( 0, 0, 0 )},
                 ringSize: { value: ringSize },
-                click: { value: 1.0 },
+                click: { value: 0.0 },
                 hoverTime: { value: 0.0 },
-                textureEnv: { type: 't', value: loader.load( 'img/int_' + index + '.jpg' ) }
+                textureEnv: { type: 't', value: texture },
+                currentTime: { value: 0.0 }, 
+                distance: { value: new THREE.Vector2(0.5, 0.5).sub(position) }
             };
-
+            
             // RAYCASTER //
             var parent, p, clickThres;
             var animSwitch = 0;
@@ -54,14 +59,15 @@ AFRAME.registerComponent('glsl_shader', {
             var countUp = Date.now();
             var raycaster = document.getElementById("raycaster");
             raycaster.addEventListener('raycaster-intersection', function (evt) {
-                parent = evt.detail.els[0].object3D;
-                p = evt.detail.intersections[0].point;
-                //element.uniforms.rayPos.value = p;
+                parent = evt.detail.els[index - 1].object3D;
+                p = evt.detail.intersections[index - 1].point;
+                uv = evt.detail.intersections[index - 1].uv;
+                uv.y = uv.y * 0.5 + 0.25;
                 
-                if (p.distanceTo(element.uniforms.elementPos.value) < ringSize) {
+                if (uv.distanceTo(element.uniforms.distance.value) < Math.sqrt(ringSize) * 0.25) {
                     if (animSwitch == 0) {
                         animSwitch = 1;
-                        clickThres = ringSize * 2;
+                        clickThres = Math.sqrt(ringSize * 2) * 0.25;
                         $({animValue: 0}).animate({animValue: 1}, {
                             duration: 200,
                             step: function() { 
@@ -72,6 +78,7 @@ AFRAME.registerComponent('glsl_shader', {
                         $({animValue: 0}).animate({animValue: 1}, {
                             duration: 1000,
                             complete: function() {
+                                console.log("VR Click!")
                                 var mousedown = new Event('mousedown');
                                 var mouseup = new Event('mouseup');
                                 document.dispatchEvent(mousedown);
@@ -79,10 +86,10 @@ AFRAME.registerComponent('glsl_shader', {
                             }
                         });
                     }
-                } else if (p.distanceTo(element.uniforms.elementPos.value) > (ringSize * 2)) {
+                } else if (uv.distanceTo(element.uniforms.distance.value) > Math.sqrt(ringSize * 2) * 0.25) {
                     if (animSwitch == 1) {
                         animSwitch = 0;
-                        clickThres = ringSize;
+                        clickThres = Math.sqrt(ringSize) * 0.25;
                         $({animValue: 1}).animate({animValue: 0}, {
                             duration: 200,
                             step: function() { 
@@ -111,7 +118,7 @@ AFRAME.registerComponent('glsl_shader', {
             function expandCircle() {
                 
                 // If clicked inside circle and circle not currently selected
-                if (p.distanceTo(element.uniforms.elementPos.value) < clickThres && selected != index) {
+                if (uv.distanceTo(element.uniforms.distance.value) < clickThres && selected != index) {
                     // Reset animation of previously selected
                     var resetAnim = document.getElementById("circle_" + selected);
                     if (resetAnim != null) {
@@ -120,7 +127,7 @@ AFRAME.registerComponent('glsl_shader', {
                     // Settings and animation
                     selected = index;
                     mesh.renderOrder = 2;
-                    $({animValue: 1}).animate({animValue: 10}, {
+                    $({animValue: 0}).animate({animValue: 1}, {
                         duration: 750,
                         step: function() { 
                             element.uniforms.click.value = this.animValue;      
@@ -134,41 +141,40 @@ AFRAME.registerComponent('glsl_shader', {
             
             function newEnvPositions(idx) {
                 switch(selected - 1) {
-                        
                     case 0:
                         var envPos = {
-                            1: { value: new THREE.Vector3( -1, 0, -1 ) },
-                            2: { value: new THREE.Vector3( 0, 0, -1 ) },
-                            3: { value: new THREE.Vector3( 1, 0, -1 ) }
+                            1: { value: new THREE.Vector2( -0.1, 0.0 ) },
+                            2: { value: new THREE.Vector2( 0.0, 0.0 ) },
+                            3: { value: new THREE.Vector2( 0.1, 0.0 ) }
                         }
-                        return envPos[idx].value.normalize();
+                        return envPos[idx].value;
                         break;
                         
                     case 1:
                         var envPos = {
-                            0: { value: new THREE.Vector3( 0, 1, -1 ) },
-                            2: { value: new THREE.Vector3( 0, 0, -1 ) },
-                            3: { value: new THREE.Vector3( 0, -1, -1 ) }
+                            0: { value: new THREE.Vector2( -0.1, 0.0 ) },
+                            2: { value: new THREE.Vector2( 0.0, 0.0 ) },
+                            3: { value: new THREE.Vector2( 0.1, 0.0 ) }
                         }
-                        return envPos[idx].value.normalize();
+                        return envPos[idx].value;
                         break;
                         
                     case 2:
                         var envPos = {
-                            0: { value: new THREE.Vector3( -1, -1, -1 ) },
-                            1: { value: new THREE.Vector3( 0, 0, -1 ) },
-                            3: { value: new THREE.Vector3( 1, 1, -1 ) }
+                            0: { value: new THREE.Vector2( -0.1, 0.0 ) },
+                            1: { value: new THREE.Vector2( 0.0, 0.0 ) },
+                            3: { value: new THREE.Vector2( 0.1, 0.0 ) }
                         }
-                        return envPos[idx].value.normalize();
+                        return envPos[idx].value;
                         break;
                         
                     case 3:
                         var envPos = {
-                            0: { value: new THREE.Vector3( -1, 1, -1 ) },
-                            1: { value: new THREE.Vector3( 0, 0, -1 ) },
-                            2: { value: new THREE.Vector3( 1, -1, -1 ) }
+                            0: { value: new THREE.Vector2( -0.1, 0.0 ) },
+                            1: { value: new THREE.Vector2( 0.0, 0.0 ) },
+                            2: { value: new THREE.Vector2( 0.1, 0.0 ) }
                         }
-                        return envPos[idx].value.normalize();
+                        return envPos[idx].value;
                         break;
                 }
             }
@@ -181,18 +187,20 @@ AFRAME.registerComponent('glsl_shader', {
                     var envIndex = allEnv[i].id.split("_")[1];
                     if (envIndex != selected) {
                         allEnv[i].getObject3D('mesh').renderOrder = 1;
+                        allEnv[i].uniforms.click.value = 0;
                         allEnv[i].uniforms.elementPos.value = newEnvPositions(i);
+                        allEnv[i].uniforms.distance.value = new THREE.Vector2(0.5, 0.5).sub(newEnvPositions(i));
                     }
                 }
                 
                 // Fade-in circles
                 allEnv.splice(selected - 1, 1);
-                $({animValue: 0}).animate({animValue: 1}, {
+                $({animValue: 0}).animate({animValue: ringSize}, {
                     duration: 250,
                     step: function() { 
-                        allEnv[0].uniforms.click.value = this.animValue;
-                        allEnv[1].uniforms.click.value = this.animValue;
-                        allEnv[2].uniforms.click.value = this.animValue;
+                        allEnv[0].uniforms.ringSize.value = this.animValue;
+                        allEnv[1].uniforms.ringSize.value = this.animValue;
+                        allEnv[2].uniforms.ringSize.value = this.animValue;
                     }
                 });
                 
@@ -208,5 +216,9 @@ AFRAME.registerComponent('glsl_shader', {
                 transparent: true
             });
         });
+    },
+    tick: function () {
+        var element = this.el;
+        element.uniforms.currentTime.value = Math.max(0.0, Math.min(1.0, (Date.now() * 0.001) % 3.0 - 1.0));
     }
 });

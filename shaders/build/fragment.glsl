@@ -1,8 +1,11 @@
 #define GLSLIFY 1
+#define PI 3.141592653589793
+
 uniform vec3 elementPos;
 uniform float ringSize;
 uniform float click;
 uniform float hoverTime;
+uniform float currentTime;
 uniform sampler2D textureEnv;
 varying vec3 vPos;
 varying vec2 vUv;
@@ -32,21 +35,46 @@ float backOut(float t) {
   return 1.0 - (pow(f, 3.0) - f * sin(f * PI));
 }
 
+vec2 convert(vec2 uv, vec2 origin) {
+    float s = 1.0 / PI;
+    float r = length(uv - origin);
+    float theta = mod(atan(uv.y - origin.y, uv.x - origin.x) + PI / 2.0 + PI, 2.0 * PI) - PI;
+    return vec2(s * theta, -r * 1.0) + origin;
+}
+
+vec2 calc(vec2 p, vec2 origin, float t) {
+    vec2 q = convert(p, origin);
+    vec2 uv = mix(p, q, t);
+    return uv;
+}
+
 void main() {
     
-    vec2 uvMod = vUv;
+    // Deform Amount
+    float deform = 1.0 - click;
+    //deform = 0.0;
+    // Scale Up
+    float xOffset = elementPos.x;
+    float yOffset = elementPos.y * deform;
+    vec2 scaledUV = vec2(vUv.x + xOffset, vUv.y + yOffset) * 2.0 - 1.0;
+    scaledUV.x *= 2.0;
+    vec2 ratio = vec2(scaledUV.x * 0.5, scaledUV.y);
     
-    float size = ringSize;
-    
+    // Anim
     float hoverMult = backOut(min(1.0, hoverTime)) + 1.0;
-    size *= hoverMult * click;
-
-    float falloff = min(distance(elementPos, vPos) / size, 1.0);
-    float blend = clamp(range(0.95, 1.0, falloff), 0.0, 1.0);
-    gl_FragColor = mix(texture2D(textureEnv, uvMod), vec4(vec3(0.75), 0.0), blend);
     
-    if (falloff > 0.975 && falloff < 1.0) {
-        gl_FragColor = vec4(vec3(0.9, 0.49, 0.13), 1.0);
-    }
+    // Create UVs
+    float anim = ringSize * hoverMult;
+    anim = mix(anim, 1.0, click);
+    //anim = 1.0;
+    float circle = sqrt((anim) - deform * dot(scaledUV, scaledUV));
+    vec2 sampleUV = ratio / circle;
+    // Scale Down
+    sampleUV = (sampleUV + 1.0) * 0.5;
+    
+    // Final Texture
+    float alpha = range(0.0, 0.1, circle);
+    gl_FragColor = vec4(vec3(texture2D(textureEnv, sampleUV, 0.0)), alpha);
+    //gl_FragColor = vec4(vec3(circle > 0.0), 1.0);
     
 }
