@@ -17,8 +17,8 @@ AFRAME.registerComponent('glsl_shader', {
         var position = new THREE.Vector2(dPos.x, dPos.y);
         var ringSize = 0.015;
         var radius = 1, segments = 64, rings = 32;
-        //var geometry = new THREE.SphereBufferGeometry( radius, segments, rings );
-        var geometry = new THREE.PlaneBufferGeometry( 0.4, 0.2, 1, 1 );
+        var geometry = new THREE.SphereBufferGeometry( radius, segments, rings );
+        //var geometry = new THREE.PlaneBufferGeometry( 0.4, 0.2, 1, 1 );
         var mesh = this.el.getOrCreateObject3D('mesh', THREE.Mesh);
         mesh.geometry = geometry;
         mesh.renderOrder = 0;
