@@ -26,13 +26,13 @@ AFRAME.registerComponent('glsl_shader', {
         
         // Canvas Texture
         var canvas = document.createElement('canvas');
-        canvas.width = 1024;
-        canvas.height = 512;
+        canvas.width = 512;
+        canvas.height = 256;
         var ctx = canvas.getContext('2d', {alpha: false});
         ctx.font = "Bold 100px Arial";
         ctx.fillStyle="#FFF";
         ctx.textAlign="center";
-        ctx.fillText(this.data.text, 512, 256);
+        ctx.fillText(this.data.text, 256, 128);
         var canvasTex = new THREE.Texture(canvas) 
         canvasTex.needsUpdate = true;
         
@@ -53,9 +53,6 @@ AFRAME.registerComponent('glsl_shader', {
             var texture = loader.load( 'img/int_' + index + '.jpg' );
             texture.wrapS = THREE.RepeatWrapping;
             texture.wrapT = THREE.ClampToEdgeWrapping;
-            
-            // Canvas
-            //texture = canvasTex;
             
             element.uniforms = {
                 elementPos: { value: position },
@@ -222,10 +219,6 @@ AFRAME.registerComponent('glsl_shader', {
                     if (envIndex != selected) {
                         allEnv[i].getObject3D('mesh').renderOrder = 1;
                         allEnv[i].uniforms.click.value = 0;
-                        //console.log(newEnvPositions(i));
-                        //allEnv[i].uniforms.elementPos.value = newEnvPositions(i);
-                        //console.log(distance.sub(newEnvPositions(i)));
-                        //allEnv[i].uniforms.distance.value = distance.sub(newEnvPositions(i));
                     }
                 }
                 
