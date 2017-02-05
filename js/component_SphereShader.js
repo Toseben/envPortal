@@ -4,6 +4,7 @@ var selected;
 AFRAME.registerComponent('glsl_shader', {
     schema: {
         index: {type: 'string'},
+        text: {type: 'string'},
         pos: {type: 'vec2'}
     },
     
@@ -16,12 +17,24 @@ AFRAME.registerComponent('glsl_shader', {
         var dPos = this.data.pos;
         var position = new THREE.Vector2(dPos.x, dPos.y);
         var ringSize = 0.015;
-        var radius = 1, segments = 64, rings = 32;
+        var radius = 2, segments = 64, rings = 32;
         var geometry = new THREE.SphereBufferGeometry( radius, segments, rings );
-        //var geometry = new THREE.PlaneBufferGeometry( 0.4, 0.2, 1, 1 );
+        //var geometry = new THREE.PlaneBufferGeometry( 4, 2, 1, 1 );
         var mesh = this.el.getOrCreateObject3D('mesh', THREE.Mesh);
         mesh.geometry = geometry;
         mesh.renderOrder = 0;
+        
+        // Canvas Texture
+        var canvas = document.createElement('canvas');
+        canvas.width = 1024;
+        canvas.height = 512;
+        var ctx = canvas.getContext('2d', {alpha: false});
+        ctx.font = "Bold 100px Arial";
+        ctx.fillStyle="#FFF";
+        ctx.textAlign="center";
+        ctx.fillText(this.data.text, 512, 256);
+        var canvasTex = new THREE.Texture(canvas) 
+        canvasTex.needsUpdate = true;
         
         // RENDER SETTINGS //
         var scene = document.querySelector('a-scene');
@@ -30,8 +43,6 @@ AFRAME.registerComponent('glsl_shader', {
             tRenderer = scene.renderer;
             tCamera = scene.camera;
             tScene = scene.object3D;
-            
-            //console.log(tRenderer);
         });
         
         // SHADER //
@@ -43,6 +54,9 @@ AFRAME.registerComponent('glsl_shader', {
             texture.wrapS = THREE.RepeatWrapping;
             texture.wrapT = THREE.ClampToEdgeWrapping;
             
+            // Canvas
+            //texture = canvasTex;
+            
             element.uniforms = {
                 elementPos: { value: position },
                 rayPos: { value: new THREE.Vector3( 0, 0, 0 )},
@@ -50,6 +64,7 @@ AFRAME.registerComponent('glsl_shader', {
                 click: { value: 0.0 },
                 hoverTime: { value: 0.0 },
                 textureEnv: { type: 't', value: texture },
+                canvasTex: { type: 't', value: canvasTex },
                 currentTime: { value: 0.0 }, 
                 distance: { value: new THREE.Vector2(0.5, 0.5).sub(position) }
             };
@@ -82,7 +97,7 @@ AFRAME.registerComponent('glsl_shader', {
                             duration: 1000,
                             complete: function() {
                                 if (animSwitch == 1) {
-                                    console.log("Gaze Click!")
+                                    //console.log("Gaze Click!")
                                     var mousedown = new Event('mousedown');
                                     var mouseup = new Event('mouseup');
                                     document.dispatchEvent(mousedown);
@@ -131,6 +146,17 @@ AFRAME.registerComponent('glsl_shader', {
                     if (resetAnim != null) {
                         resetAnim.getObject3D('mesh').renderOrder = 1;
                     }
+                    
+                    // Text Fade
+                    var text = $('.text');
+                    var textLength = text.length;
+                    for (var i = 0; i < textLength; i++) {
+                        var textOpacity = text[i].getAttribute('bmfont-text').opacity;
+                        if (textOpacity == 1) {
+                            text[i].emit('animate');
+                        }
+                    }
+                    
                     // Settings and animation
                     selected = index;
                     mesh.renderOrder = 2;

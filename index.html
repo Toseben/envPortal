@@ -13,9 +13,11 @@
     <script src="js/jquery.min.js"></script>
     <script src="js/ShaderLoader.min.js"></script>
     <script src="js/component_SphereShader.js"></script>
+    <script src="js/aframe-animation-component.min.js"></script>
+    <script src="js/aframe-bmfont-text-component.min.js"></script>
 </head>
 <body>
-    
+
     <script src="./bundle.js"></script>
     <script data-src="shaders/vertex.glsl" data-name="custom" type="x-shader/x-vertex"></script>
     <script data-src="shaders/build/fragment.glsl" data-name="custom" type="x-shader/x-fragment"></script>
@@ -23,16 +25,23 @@
     <a-scene>
         
         <a-camera position="0 -1.6 0" wasd-controls="enabled: true">
-            <a-entity id="raycaster" raycaster material="color: red"
-            position="0 0 -0.9" geometry="primitive: box" scale="0.01 0.01 0.01"
+            <a-entity id="raycaster" raycaster material="color: #e74c3c; shader: flat"
+            position="0 0 -1" geometry="primitive: sphere" scale="0.01 0.01 0.01"
             ></a-entity>
         </a-camera>    
         
-        <a-entity rotation="0 90 0" id="circle_1" class="env" glsl_shader="index: 0; pos: -0.15 0.0" ></a-entity>
-        <a-entity rotation="0 90 0" id="circle_2" class="env" glsl_shader="index: 1; pos: -0.05 0.0" ></a-entity>
-        <a-entity rotation="0 90 0" id="circle_3" class="env" glsl_shader="index: 2; pos: 0.05 0.0" ></a-entity>
-        <a-entity rotation="0 90 0" id="circle_4" class="env" glsl_shader="index: 3; pos: 0.15 0.0" ></a-entity>
-        <a-sky color="#3498db"></a-sky>
+        <a-entity rotation="0 90 0" id="circle_1" class="env" glsl_shader="index: 0; pos: -0.12 0.0; text: LIVING ROOM" ></a-entity>
+        <a-entity rotation="0 90 0" id="circle_2" class="env" glsl_shader="index: 1; pos: -0.04 0.0; text: DINING ROOM" ></a-entity>
+        <a-entity rotation="0 90 0" id="circle_3" class="env" glsl_shader="index: 2; pos: 0.04 0.0; text: KITCHEN" ></a-entity>
+        <a-entity rotation="0 90 0" id="circle_4" class="env" glsl_shader="index: 3; pos: 0.12 0.0; text: BEDROOM" ></a-entity>
+        <a-sky color="#bdc3c7"></a-sky>
+        
+        <a-entity bmfont-text="text: VIRTUAL HOUSE TOUR; color: white; opacity: 1" position="-1.075 0.5           -1.4" scale="1.25 1.25 1.25" class="text"
+                  animation="property: bmfont-text.opacity; dur: 250; startEvents: animate; from: 1; to: 0"></a-entity>
+        <a-entity bmfont-text="text: USE THE RED DOT TO SELECT IMAGES BY HOVERING OVER THEM!; color: 
+                  white; width: 600; align: center; opacity: 1" position="-0.735 -0.65 -1.4" 
+                  scale="0.5 0.5 0.5" class="text"
+                  animation="property: bmfont-text.opacity; dur: 250; startEvents: animate; from: 1; to: 0"></a-entity>
         
     </a-scene>
     

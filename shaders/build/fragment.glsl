@@ -7,6 +7,7 @@ uniform float click;
 uniform float hoverTime;
 uniform float currentTime;
 uniform sampler2D textureEnv;
+uniform sampler2D canvasTex;
 varying vec3 vPos;
 varying vec2 vUv;
 
@@ -60,7 +61,6 @@ void main() {
     vec2 scaledUV = vec2(vUv.x + xOffset, vUv.y + yOffset) * 2.0 - 1.0;
     scaledUV.x *= 2.0;
     vec2 ratio = vec2(scaledUV.x * 0.5, scaledUV.y);
-    //ratio = clamp(ratio, 0.0, 1.0);
     
     // Anim
     float hoverMult = backOut(min(1.0, hoverTime)) + 1.0;
@@ -71,16 +71,17 @@ void main() {
     //anim = 1.0;
     float circle = anim - deform * dot(scaledUV, scaledUV);
     circle = sqrt(clamp(circle, 0.0, 1.0));
-    //circle = clamp(circle, 0.0, 1.0);
     vec2 sampleUV = ratio / circle;
     
     // Scale Down
     sampleUV = (sampleUV + 1.0) * 0.5;
-    //sampleUV = clamp(sampleUV, 0.0, 1.0);
     
     // Final Texture
     float alpha = range(0.0, 0.1, circle);
-    gl_FragColor = vec4(vec3(texture2D(textureEnv, sampleUV, 0.0)), alpha);
+    vec3 tex = vec3(texture2D(textureEnv, sampleUV, 0.0));
+    vec3 canvasTex = vec3(texture2D(canvasTex, vec2(1.0 - sampleUV.x, sampleUV.y), 0.0));
+    tex = mix(tex, canvasTex, canvasTex.x * max(range(0.66, 1.0, deform), 0.0));
+    gl_FragColor = vec4(tex, alpha);
     //gl_FragColor = vec4(vec3(1.0, 0.0, 0.0), circle);
     
 }
