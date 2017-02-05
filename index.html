@@ -16,6 +16,25 @@
 </head>
 <body>
     
+    <script>
+    
+    AFRAME.registerComponent('test', {
+       
+        init: function () {
+            
+            var geometry = new THREE.SphereBufferGeometry( 0.125, 32, 32 );
+            var mesh = this.el.getOrCreateObject3D('mesh', THREE.Mesh);
+            mesh.geometry = geometry;
+            mesh.material = new THREE.MeshPhongMaterial( { color: 0xff0000 } );
+            mesh.material.transparent = true;
+            mesh.material.opacity = 0.5;
+            
+        }
+        
+    });
+    
+    </script>
+    
     <script src="./bundle.js"></script>
     <script data-src="shaders/vertex.glsl" data-name="custom" type="x-shader/x-vertex"></script>
     <script data-src="shaders/build/fragment.glsl" data-name="custom" type="x-shader/x-fragment"></script>
@@ -34,7 +53,7 @@
         <a-entity rotation="0 90 0" id="circle_4" class="env" glsl_shader="index: 3; pos: 0.15 0.0" ></a-entity>
         <a-sky color="#3498db"></a-sky>
         
-        <a-sphere position="0.05 0 0" scale="0.1 0.1 0.1" material="opacity:  0.5; transparent: true; color: red"></a-sphere>
+        <a-entity test></a-entity>
         
     </a-scene>
     
