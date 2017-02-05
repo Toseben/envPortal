@@ -15,5 +15,8 @@
     "glsl-range": "^1.0.0",
     "glslify": "^6.0.1",
     "glslify-live": "^2.1.1"
+  },
+  "devDependencies": {
+    "glslify-live": "^2.1.1"
   }
 }
