@@ -45,6 +45,7 @@ void main() {
     anim = mix(anim, 1.0, click);
     //anim = 1.0;
     float circle = sqrt((anim) - deform * dot(scaledUV, scaledUV));
+    circle = max(0.0, circle);
     vec2 sampleUV = ratio / circle;
     // Scale Down
     sampleUV = (sampleUV + 1.0) * 0.5;
@@ -52,6 +53,7 @@ void main() {
     // Final Texture
     float alpha = range(0.0, 0.1, circle);
     gl_FragColor = vec4(vec3(texture2D(textureEnv, sampleUV, 0.0)), alpha);
-    gl_FragColor = vec4(vec3(sampleUV.y < 0.0), 1.0);
+    
+    gl_FragColor = vec4(vec3(sampleUV, 0.0), 1.0);
     
 }
