@@ -30,6 +30,8 @@ AFRAME.registerComponent('glsl_shader', {
             tRenderer = scene.renderer;
             tCamera = scene.camera;
             tScene = scene.object3D;
+            
+            //console.log(tRenderer);
         });
         
         // SHADER //
