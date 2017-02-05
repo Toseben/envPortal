@@ -29,7 +29,7 @@ AFRAME.registerComponent('glsl_shader', {
         canvas.width = 512;
         canvas.height = 256;
         var ctx = canvas.getContext('2d', {alpha: false});
-        ctx.font = "Bold 100px Arial";
+        ctx.font = "Bold 50px Arial";
         ctx.fillStyle="#FFF";
         ctx.textAlign="center";
         ctx.fillText(this.data.text, 256, 128);
