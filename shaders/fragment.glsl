@@ -47,12 +47,12 @@ void main() {
     anim = mix(anim, 1.0, click);
     //anim = 1.0;
     float circle = sqrt((anim) - deform * dot(scaledUV, scaledUV));
-    circle = clamp(circle, 0.0, 1.0);
+    //circle = clamp(circle, 0.0, 1.0);
     vec2 sampleUV = ratio / circle;
     
     // Scale Down
     sampleUV = (sampleUV + 1.0) * 0.5;
-    sampleUV = clamp(sampleUV, 0.0, 1.0);
+    //sampleUV = clamp(sampleUV, 0.0, 1.0);
     
     // Final Texture
     float alpha = range(0.0, 0.1, circle);
