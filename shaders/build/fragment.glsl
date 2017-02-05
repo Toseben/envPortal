@@ -69,8 +69,9 @@ void main() {
     float anim = ringSize * hoverMult;
     anim = mix(anim, 1.0, click);
     //anim = 1.0;
-    float circle = sqrt(deform * dot(scaledUV, scaledUV));
-    circle = clamp(circle, 0.0, 1.0);
+    float circle = anim - deform * dot(scaledUV, scaledUV);
+    circle = sqrt(clamp(circle, 0.0, 1.0));
+    //circle = clamp(circle, 0.0, 1.0);
     vec2 sampleUV = ratio / circle;
     
     // Scale Down
@@ -80,6 +81,6 @@ void main() {
     // Final Texture
     float alpha = range(0.0, 0.1, circle);
     gl_FragColor = vec4(vec3(texture2D(textureEnv, sampleUV, 0.0)), alpha);
-    gl_FragColor = vec4(vec3(1.0, 0.0, 0.0), circle * 0.25);
+    gl_FragColor = vec4(vec3(1.0, 0.0, 0.0), circle);
     
 }
