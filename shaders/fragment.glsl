@@ -57,6 +57,6 @@ void main() {
     // Final Texture
     float alpha = range(0.0, 0.1, circle);
     gl_FragColor = vec4(vec3(texture2D(textureEnv, sampleUV, 0.0)), alpha);
-    gl_FragColor = vec4(vec3(1.0, 0.0, 0.0), deform * dot(scaledUV, scaledUV) * 0.25);
+    gl_FragColor = vec4(vec3(1.0, 0.0, 0.0), sqrt((anim) - deform * dot(scaledUV, scaledUV)) * 5.0);
     
 }
